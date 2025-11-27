@@ -6,8 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/app.ts",
+    "server": "nodemon src/server.ts",
     "build": "npm run clean && tsc -p .",
-    "start": "node dist/app.js"
+    "start": "node dist/app.js",
+    "example:migration": "ts-node -r tsconfig-paths/register src/examples/migration-analysis.ts",
+    "analyze": "ts-node -r tsconfig-paths/register src/scripts/analyze-migrations.ts"
   },
   "keywords": [],
   "author": "",
@@ -21,7 +24,11 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
+    "express": "^5.1.0",
     "mongoose": "^8.19.3"
   }
 }

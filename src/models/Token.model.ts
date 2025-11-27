@@ -45,6 +45,7 @@ export interface ITokenInfo {
   mintBuyAmt: number;
   maxSol: number;
   maxPrice: number;
+  migrated: boolean;
   migrateTime: number;
   migrateSlot: number;
   mintSlotSol: number;
@@ -81,6 +82,7 @@ export interface IDBTokenInfo {
   mintBuyAmt: number;
   maxSol: number;
   maxPrice: number;
+  migrated: boolean;
   mintPattern: string;
   migrateTime: number;
   tracesLen?: number;
@@ -119,6 +121,7 @@ const TokenInfoSchema = new Schema<ITokenInfoDocument>(
     mintBuyAmt: { type: Number, default: 0 },
     maxSol: { type: Number, default: 0 },
     maxPrice: { type: Number, default: 0 },
+    migrated: { type: Boolean, default: false },
     migrateTime: { type: Number, default: 0 },
     mintPattern: { type: String, default: "" },
     // Bundles stored as a compact summary document
