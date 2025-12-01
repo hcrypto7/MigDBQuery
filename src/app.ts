@@ -22,18 +22,19 @@ async function main() {
       {
         mintPattern: true,
         unitPrice: true,
-        unitLimit: true
+        unitLimit: true,
+        mintBuyAmt: true
       },
       {
         minMaxSol: 1,
         startTime: oneDayAgo,
-        winPercent: 55
+        winPercent: 70
       }
     );
 
     // Filter groups with 30+ tokens and sort by common rise SOL
     const filteredGroups = complexGroups
-      .filter(group => group.totalTokens >= 30)
+      .filter(group => group.totalTokens >= 10)
       .sort((a, b) => b.commonRiseSol - a.commonRiseSol);
 
     console.log(`Found ${filteredGroups.length} publisher groups with 30+ tokens (last 24h)\n`);
@@ -46,6 +47,7 @@ async function main() {
       console.log(`   Configuration: Pattern="${group.groupIdentifier.mintPattern || 'N/A'}" | Price=${group.groupIdentifier.unitPrice || 0} | Limit=${group.groupIdentifier.unitLimit || 0}`);
       console.log(`   Tokens: ${group.totalTokens} | Migration: ${group.migratedTokens}/${group.totalTokens} (${group.migrationRate}%)`);
       console.log(`   Common Rise SOL (70% reached): ${group.commonRiseSol.toFixed(4)} | Avg Max SOL: ${group.avgMaxSol.toFixed(4)} | Total: ${group.totalMaxSol.toFixed(4)}`);
+      console.log(`   Drop Rate: ${group.dropRate.toFixed(2)}% (${group.tokensWithDrop}/${group.totalTokens} tokens had sudden drops > 50%)`);
     });
 
     console.log('\n' + '='.repeat(120));

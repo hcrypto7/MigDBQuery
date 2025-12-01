@@ -13,7 +13,11 @@ interface PatternDataItem {
   mintPattern: string;
   unitPrice: number;
   unitLimit: number;
+  mintBuyAmt: number;
   commonRise: number;
+  dropRate: number;
+  tokensWithDrop: number;
+  totalTokens: number;
 }
 
 interface PatternDataResponse {
@@ -38,7 +42,8 @@ app.get('/api/pattern-analysis', async (req: Request, res: Response) => {
       {
         mintPattern: true,
         unitPrice: true,
-        unitLimit: true
+        unitLimit: true,
+        mintBuyAmt: true
       },
       {
         minMaxSol: minMaxSol,
@@ -57,7 +62,11 @@ app.get('/api/pattern-analysis', async (req: Request, res: Response) => {
       mintPattern: group.groupIdentifier.mintPattern || '',
       unitPrice: group.groupIdentifier.unitPrice || 0,
       unitLimit: group.groupIdentifier.unitLimit || 0,
-      commonRise: parseFloat(group.commonRiseSol.toFixed(4))
+      mintBuyAmt: group.groupIdentifier.mintBuyAmt || 0,
+      commonRise: parseFloat(group.commonRiseSol.toFixed(4)),
+      dropRate: parseFloat(group.dropRate.toFixed(2)),
+      tokensWithDrop: group.tokensWithDrop,
+      totalTokens: group.totalTokens
     }));
 
     const response: PatternDataResponse = {

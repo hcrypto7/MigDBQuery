@@ -1,12 +1,13 @@
 import { ITokenInfoDocument, TokenInfoModel } from '../models/Token.model';
 
-export type GroupingKey = 'mintPattern' | 'unitPrice' | 'unitLimit' | 'postMintBundle';
+export type GroupingKey = 'mintPattern' | 'unitPrice' | 'unitLimit' | 'postMintBundle' | 'mintBuyAmt';
 
 export type GroupingCriteria = {
   mintPattern?: boolean;
   unitPrice?: boolean;
   unitLimit?: boolean;
   postMintBundle?: boolean;
+  mintBuyAmt?: boolean;
 };
 
 export type TokenGroupStats = {
@@ -19,6 +20,8 @@ export type TokenGroupStats = {
   avgMaxSol: number;
   totalMaxSol: number;
   commonRiseSol: number; // Rise SOL that 70% of tokens reached (sell point)
+  dropRate: number; // percentage of tokens with sudden drops (dropPercent > 50)
+  tokensWithDrop: number; // count of tokens with sudden drops
   tokens: Array<{
     mint: string;
     mintTime: number;
@@ -26,6 +29,7 @@ export type TokenGroupStats = {
     maxSol: number;
     maxPrice: number;
     mintSlotSol?: number;
+    dropPercent?: number;
   }>;
 };
 
@@ -103,6 +107,11 @@ export class QueryService {
       groupId.totalBuySol = { $round: ['$postMintBundle.totalBuySol', 2] };
       selectedKeys.push('postMintBundle');
     }
+    
+    if (groupingCriteria.mintBuyAmt) {
+      groupId.mintBuyAmt = { $round: ['$mintBuyAmt', 4] };
+      selectedKeys.push('mintBuyAmt');
+    }
 
     // Aggregate query
     const results = await TokenInfoModel.aggregate([
@@ -125,6 +134,7 @@ export class QueryService {
               maxPrice: '$maxPrice',
               mintSlotSol: '$mintSlotSol',
               mintBuyAmt: '$mintBuyAmt',
+              dropPercent: '$dropPercent',
               mintPattern: '$mintPattern',
               unitPrice: '$unitPrice',
               unitLimit: '$unitLimit',
@@ -168,6 +178,9 @@ export class QueryService {
       if (result.groupIdentifier.bundleSize !== undefined) {
         groupKeyParts.push(`bundle:${result.groupIdentifier.bundleSize}-${result.groupIdentifier.totalBuySol}`);
       }
+      if (result.groupIdentifier.mintBuyAmt !== undefined) {
+        groupKeyParts.push(`mintBuy:${result.groupIdentifier.mintBuyAmt}`);
+      }
 
       // Calculate rise SOL (maxSol - mintSlotSol) for each token
       // If mintSlotSol < 0.05, use mintBuyAmt instead
@@ -189,6 +202,10 @@ export class QueryService {
       const percentileIndex = Math.floor(riseSols.length * (1 - winPercent / 100));
       const commonRiseSol = riseSols.length > 0 ? riseSols[percentileIndex] : 0;
 
+      // Calculate drop rate: percentage of tokens with sudden drops (dropPercent > 50)
+      const tokensWithDrop = result.tokens.filter((t: any) => (t.dropPercent || 0) > 50).length;
+      const dropRate = result.totalTokens > 0 ? (tokensWithDrop / result.totalTokens) * 100 : 0;
+
       return {
         groupKey: groupKeyParts.join('|') || `group-${index}`,
         groupIdentifier: result.groupIdentifier,
@@ -199,6 +216,8 @@ export class QueryService {
         avgMaxSol: result.avgMaxSol,
         totalMaxSol: result.totalMaxSol,
         commonRiseSol: Math.round(commonRiseSol * 10000) / 10000,
+        dropRate: Math.round(dropRate * 100) / 100,
+        tokensWithDrop: tokensWithDrop,
         tokens: result.tokens.map((t: any) => ({
           mint: t.mint,
           mintTime: t.mintTime,
@@ -206,7 +225,8 @@ export class QueryService {
           maxSol: t.maxSol,
           maxPrice: t.maxPrice,
           mintSlotSol: t.mintSlotSol,
-          mintBuyAmt: t.mintBuyAmt
+          mintBuyAmt: t.mintBuyAmt,
+          dropPercent: t.dropPercent
         }))
       };
     });

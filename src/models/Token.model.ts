@@ -42,6 +42,9 @@ export interface ITokenInfo {
   firstSlotNumber: number;
   traces: TraceData[];
   trades: TradeData[];
+  dropPointSol: number;
+  dropPercent: number;
+  dropTime: number;
   mintBuyAmt: number;
   maxSol: number;
   maxPrice: number;
@@ -73,6 +76,9 @@ export interface IDBTokenInfo {
   mint: string;
   mintTime: number;
   mintSlot: number;
+  dropPointSol: number;
+  dropPercent: number;
+  dropTime: number;
   firstSlotNumber: number;
   migrateSlot: number;
   mintSlotSol: number;
@@ -124,6 +130,9 @@ const TokenInfoSchema = new Schema<ITokenInfoDocument>(
     migrated: { type: Boolean, default: false },
     migrateTime: { type: Number, default: 0 },
     mintPattern: { type: String, default: "" },
+    dropPointSol: { type: Number, default: 0 },
+    dropPercent: { type: Number, default: 0 },
+    dropTime: { type: Number, default: 0 },
     // Bundles stored as a compact summary document
     postMintBundle: {
       blockTime: { type: Number, default: 0 },
